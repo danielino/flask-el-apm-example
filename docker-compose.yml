@@ -1,0 +1,34 @@
+version: '3.4'
+
+services:
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.6.1
+    ports:
+      - 9200:9200
+      - 9300:9300
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:6.6.1
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    ports:
+      - 5601:5601
+
+  apm:
+    image: docker.elastic.co/apm/apm-server:6.6.1
+    ports:
+      - 8200:8200
+    environment:
+      - output.elasticsearch.hosts=['http://elasticsearch:9200']
+      - apm-server.host="0.0.0.0:8200"
+      - setup.kibana.host="kibana:5601"
+      - setup.template.enabled=true
+    depends_on:
+      - elasticsearch
+      - kibana
+
+volumes:
+  esdata:
